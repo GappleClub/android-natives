@@ -18,7 +18,7 @@ git -C "$WORK/angle" fetch -q --depth 1 https://chromium.googlesource.com/angle/
 git -C "$WORK/angle" checkout -q FETCH_HEAD
 cd "$WORK/angle"
 python3 scripts/bootstrap.py
-echo "target_os = ['android']" >> .gclient
+sed -i "s/^target_os = .*/target_os = ['android']/" .gclient && grep -q "^target_os = ['android']" .gclient
 gclient sync --no-history --shallow -j8
 
 gn gen out/a --args='target_os="android" target_cpu="arm64" is_debug=false is_component_build=false
