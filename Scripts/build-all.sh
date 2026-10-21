@@ -39,6 +39,8 @@ for f in build-sdl3.sh build-lwjgl-natives-android.sh build-shaderc.sh; do
     "$ROOT/Scripts/upstream/$f" > "$ROOT/.linux/$f"
   chmod +x "$ROOT/.linux/$f"
 done
+# Que se vea por qué falla libffi: el original manda todo a /dev/null.
+sed -i 's| >/dev/null 2>&1$||' "$ROOT/.linux/build-lwjgl-natives-android.sh"
 
 "$ROOT/.linux/build-sdl3.sh" android
 "$ROOT/.linux/build-lwjgl-natives-android.sh" "$LWJGL_REF"
