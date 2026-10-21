@@ -12,6 +12,8 @@ mkdir -p "$WORK" "$ROOT/angle"
 
 git clone -q --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git "$WORK/depot_tools"
 export PATH="$WORK/depot_tools:$PATH" DEPOT_TOOLS_UPDATE=0
+# Sin actualizar depot_tools sigue sin inicializar, y gn/autoninja no arrancan.
+"$WORK/depot_tools/ensure_bootstrap"
 
 git init -q "$WORK/angle"
 git -C "$WORK/angle" fetch -q --depth 1 https://chromium.googlesource.com/angle/angle "$ANGLE_REF"
