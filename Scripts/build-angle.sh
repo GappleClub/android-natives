@@ -23,9 +23,7 @@ python3 - <<'PY'
 import re
 s = open(".gclient").read()
 s, n = re.subn(r"(?m)^\s*target_os\s*=.*$", "target_os = ['android']", s)
-open(".gclient", "w").write(s if n else s + "
-target_os = ['android']
-")
+open(".gclient", "w").write(s if n else s + "\ntarget_os = ['android']\n")
 PY
 cat .gclient
 gclient sync --no-history --shallow -j8
