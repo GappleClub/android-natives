@@ -24,7 +24,7 @@ SDL_REF=release-3.4.16          # la misma que FlameLauncher probó con lwjgl-sd
 LWJGL_REF=3.4.3                 # la que pide Minecraft 26.3
 SHADERC_REF=v2026.4
 SPVC_REF=vulkan-sdk-1.4.363.0
-OPENAL_REF=1.25.2
+OPENAL_REF=1.24.3          # la 1.25 usa rangos de C++ que el libc++ del NDK r28 no tiene
 FREETYPE_REF=VER-2-15-0
 export SDL_REF SHADERC_REF
 
