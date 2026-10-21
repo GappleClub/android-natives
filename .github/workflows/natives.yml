@@ -1,0 +1,53 @@
+name: Nativos Android
+
+# Compila los nativos en el runner Linux. Con una etiqueta natives-v* publica el release.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['natives-v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: write   # solo para subir el release
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: sudo apt-get update -q && sudo apt-get install -y -q ninja-build automake libtool
+
+      # CMake 3.x: el 4.x ya no acepta el cmake_minimum_required viejo del toolchain del NDK.
+      - uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.31.6'
+
+      # jni.h para compilar LWJGL.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - uses: nttld/setup-ndk@v1
+        id: ndk
+        with:
+          ndk-version: r28c
+
+      - name: Compilar
+        env:
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+        run: ./Scripts/build-all.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: natives-android-arm64-v8a
+          path: dist/*
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/natives-v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --notes "Nativos arm64-v8a para Minecraft 26.3+. Ver README."
