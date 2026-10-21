@@ -39,7 +39,7 @@ jobs:
       - name: Compilar
         env:
           ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
-        run: ./Scripts/build-all.sh
+        run: bash Scripts/build-all.sh
 
       - uses: actions/upload-artifact@v4
         with:
