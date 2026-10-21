@@ -18,7 +18,16 @@ git -C "$WORK/angle" fetch -q --depth 1 https://chromium.googlesource.com/angle/
 git -C "$WORK/angle" checkout -q FETCH_HEAD
 cd "$WORK/angle"
 python3 scripts/bootstrap.py
-sed -i "s/^target_os = .*/target_os = ['android']/" .gclient && grep -q "^target_os = ['android']" .gclient
+# bootstrap ya escribe un target_os; se cambia por Android (si no hubiera, se agrega).
+python3 - <<'PY'
+import re
+s = open(".gclient").read()
+s, n = re.subn(r"(?m)^\s*target_os\s*=.*$", "target_os = ['android']", s)
+open(".gclient", "w").write(s if n else s + "
+target_os = ['android']
+")
+PY
+cat .gclient
 gclient sync --no-history --shallow -j8
 
 gn gen out/a --args='target_os="android" target_cpu="arm64" is_debug=false is_component_build=false
