@@ -1,7 +1,8 @@
 # android-natives
 
 Bibliotecas nativas para jugar Minecraft 26.3+ en Android (arm64-v8a) desde el launcher
-GappleClient: SDL3, LWJGL 3.4.3, shaderc, SPIRV-Cross, OpenAL Soft y FreeType.
+GappleClient: SDL3, LWJGL 3.4.3, shaderc, SPIRV-Cross, OpenAL Soft, FreeType, MobileGlues y
+ANGLE.
 
 Se compilan en GitHub Actions (`.github/workflows/natives.yml`) con `Scripts/build-all.sh`; cada
 etiqueta `natives-v*` publica un release con `natives-android-arm64-v8a.zip` y su SHA-256.
@@ -17,6 +18,10 @@ está en `Scripts/upstream/NOTICE.FlameLauncher`. `build-all.sh` los adapta a Li
 
 Proyectos que se compilan (cada uno con su licencia): SDL (Zlib), LWJGL (BSD-3-Clause),
 libffi (MIT), shaderc / SPIRV-Tools (Apache-2.0), glslang (BSD-3-Clause y otras),
-SPIRV-Cross (Apache-2.0), OpenAL Soft (LGPL-2.0-or-later), FreeType (FTL / GPL-2.0).
+SPIRV-Cross (Apache-2.0), OpenAL Soft (LGPL-2.0-or-later), FreeType (FTL / GPL-2.0),
+[MobileGlues](https://github.com/MobileGL-Dev/MobileGlues) (LGPL-2.1) y ANGLE (BSD-3-Clause).
+
+MobileGlues lleva un cambio nuestro, `Scripts/mobileglues-uniform.patch` (también LGPL-2.1): sin
+él corta los sombreadores con nombres que contienen "uniform", como el del terreno de la 26.3.
 
 Minecraft es marca de Mojang AB. Este proyecto no está afiliado a Mojang AB ni a Microsoft.

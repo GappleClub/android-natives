@@ -26,6 +26,7 @@ SHADERC_REF=v2026.4
 SPVC_REF=vulkan-sdk-1.4.363.0
 OPENAL_REF=1.24.3          # la 1.25 usa rangos de C++ que el libc++ del NDK r28 no tiene
 FREETYPE_REF=VER-2-15-0
+MOBILEGLUES_REF=97558a69157b033b890958b1e49258c5b51a80c6   # main del 2026-09-22, sin tags recientes
 export SDL_REF SHADERC_REF
 
 rm -rf "$ROOT/Runtime" "$OUT"
@@ -83,6 +84,22 @@ build_cmake freetype/freetype "$FREETYPE_REF" freetype \
   -DFT_DISABLE_HARFBUZZ=ON -DFT_DISABLE_BROTLI=ON
 cp "$WORK/freetype/b/libfreetype.so" "$OUT/"
 
+# MobileGlues (LGPL-2.1): OpenGL de computador sobre OpenGL ES. Lo necesitan los móviles cuyo
+# Vulkan no llega a lo que pide Minecraft (los Mali, por ejemplo). Se le aplica
+# Scripts/mobileglues-uniform.patch: sin él corta los sombreadores con nombres que contienen
+# "uniform" (el terreno de la 26.3). Perfetto no se baja: solo sirve para perfilar.
+echo "▸ mobileglues ($MOBILEGLUES_REF)"
+git init -q "$WORK/mg" && git -C "$WORK/mg" fetch -q --depth 1 https://github.com/MobileGL-Dev/MobileGlues.git "$MOBILEGLUES_REF"
+git -C "$WORK/mg" checkout -q FETCH_HEAD
+git -C "$WORK/mg" submodule update -q --init --depth 1 MobileGlues-cpp/3rdparty/xxhash   MobileGlues-cpp/3rdparty/glslang MobileGlues-cpp/3rdparty/SPIRV-Cross MobileGlues-cpp/include/ska
+git -C "$WORK/mg" apply "$ROOT/Scripts/mobileglues-uniform.patch"
+cmake -S "$WORK/mg/MobileGlues-cpp" -B "$WORK/mg/b" "${TOOLCHAIN[@]}" > "$WORK/mg.log" 2>&1   || { tail -25 "$WORK/mg.log"; exit 1; }
+cmake --build "$WORK/mg/b" --target mobileglues -j"$(nproc)" > "$WORK/mg.log" 2>&1   || { grep -E "error" "$WORK/mg.log" | head -15; exit 1; }
+cp "$WORK/mg/b/libmobileglues.so" "$OUT/"
+
+# ANGLE lo compila Scripts/build-angle.sh en otro trabajo del CI; aquí solo se suma.
+cp "$ROOT/angle/"lib*_angle.so "$OUT/"
+
 # ── Comprobación final ─────────────────────────────────────────────────────────────
 # Cada archivo tiene que ser arm64 y exportar la función que LWJGL pide primero. Se descubre
 # aquí y no en el móvil.
@@ -98,6 +115,9 @@ check libshaderc.so shaderc_compile_options_set_max_id_bound
 check libspirv-cross.so spvc_context_create
 check libopenal.so alcOpenDevice
 check libfreetype.so FT_Init_FreeType
+check libmobileglues.so eglGetProcAddress
+check libGLESv2_angle.so glDrawArrays
+check libEGL_angle.so eglGetDisplay
 for f in "$OUT"/*.so; do "$BIN/llvm-strip" --strip-unneeded "$f"; done
 
 mkdir -p "$ROOT/dist"

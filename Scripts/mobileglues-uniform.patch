@@ -1,0 +1,17 @@
+diff --git a/MobileGlues-cpp/gl/glsl/glsl_for_es.cpp b/MobileGlues-cpp/gl/glsl/glsl_for_es.cpp
+index c7eee88..fedaed2 100644
+--- a/MobileGlues-cpp/gl/glsl/glsl_for_es.cpp
++++ b/MobileGlues-cpp/gl/glsl/glsl_for_es.cpp
+@@ -249,7 +249,11 @@ std::string process_uniform_declarations(const std::string& glslCode) {
+     result.reserve(glslCode.length());
+ 
+     while (scan_pos < length) {
+-        if (glslCode.compare(scan_pos, 7, "uniform") == 0) {
++        // Only the keyword: "uniform" inside a longer identifier (e.g. SPIRV-Cross's "_uniform"
++        // suffixes) is not a declaration, and rewriting it there truncated the statement.
++        auto is_ident = [](char c) { return std::isalnum(static_cast<unsigned char>(c)) || c == '_'; };
++        if (glslCode.compare(scan_pos, 7, "uniform") == 0 && (scan_pos == 0 || !is_ident(glslCode[scan_pos - 1])) &&
++            (scan_pos + 7 >= length || !is_ident(glslCode[scan_pos + 7]))) {
+             if (scan_pos > chunk_start) {
+                 result.append(glslCode, chunk_start, scan_pos - chunk_start);
+             }
