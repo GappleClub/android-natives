@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - run: sudo apt-get update -q && sudo apt-get install -y -q ninja-build automake libtool
+      - run: sudo apt-get update -q && sudo apt-get install -y -q ninja-build automake libtool libltdl-dev
 
       # CMake 3.x: el 4.x ya no acepta el cmake_minimum_required viejo del toolchain del NDK.
       - uses: jwlawson/actions-setup-cmake@v2
