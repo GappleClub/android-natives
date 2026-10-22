@@ -97,6 +97,25 @@ cmake -S "$WORK/mg/MobileGlues-cpp" -B "$WORK/mg/b" "${TOOLCHAIN[@]}" > "$WORK/m
 cmake --build "$WORK/mg/b" --target mobileglues -j"$(nproc)" > "$WORK/mg.log" 2>&1   || { grep -E "error" "$WORK/mg.log" | head -15; exit 1; }
 cp "$WORK/mg/b/libmobileglues.so" "$OUT/"
 
+# Nativos de Simple Voice Chat (henkelmax, cada uno con su CMake que baja Opus, RNNoise,
+# SpeexDSP o LAME). Los del mod son de Linux con glibc y en Android no cargan; gapple-ingame le
+# hace cargar estos. Las versiones son las que pide la 2.6.x del mod.
+for lib in opus4j:2.1.3 rnnoise4j:2.1.3 speex4j:1.0.3 lame4j:2.1.5; do
+  name="${lib%%:*}" ref="${lib#*:}"
+  echo "▸ $name ($ref)"
+  git clone -q --depth 1 --branch "$ref" "https://github.com/henkelmax/$name.git" "$WORK/$name"
+  cmake -S "$WORK/$name/native" -B "$WORK/$name/b" "${TOOLCHAIN[@]}" > "$WORK/$name.log" 2>&1 \
+    || { tail -25 "$WORK/$name.log"; exit 1; }
+  cmake --build "$WORK/$name/b" -j"$(nproc)" > "$WORK/$name.log" 2>&1 \
+    || { grep -E "error" "$WORK/$name.log" | head -15; exit 1; }
+  cp "$WORK/$name/b/lib$name.so" "$OUT/"
+done
+
+# JNA (la trae Minecraft) publica su nativo para Android; el de Linux pide glibc.
+JNA_REF=5.17.0
+curl -sfL "https://github.com/java-native-access/jna/raw/$JNA_REF/lib/native/android-aarch64.jar" -o "$WORK/jna.jar"
+unzip -q -o -j "$WORK/jna.jar" libjnidispatch.so -d "$OUT"
+
 # ANGLE lo compila Scripts/build-angle.sh en otro trabajo del CI; aquí solo se suma.
 cp "$ROOT/angle/"lib*_angle.so "$OUT/"
 
@@ -118,6 +137,11 @@ check libfreetype.so FT_Init_FreeType
 check libmobileglues.so eglGetProcAddress
 check libGLESv2_angle.so glDrawArrays
 check libEGL_angle.so eglGetDisplay
+check libopus4j.so Java_de_maxhenkel_opus4j_OpusEncoder_createEncoder0
+check librnnoise4j.so Java_de_maxhenkel_rnnoise4j_Denoiser_createDenoiser0
+check libspeex4j.so Java_de_maxhenkel_speex4j_AutomaticGainControl_createAgc0
+check liblame4j.so Java_de_maxhenkel_lame4j_Mp3Encoder_createEncoder0
+check libjnidispatch.so Java_com_sun_jna_Native_initIDs
 for f in "$OUT"/*.so; do "$BIN/llvm-strip" --strip-unneeded "$f"; done
 
 mkdir -p "$ROOT/dist"
