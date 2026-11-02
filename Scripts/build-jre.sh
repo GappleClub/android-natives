@@ -21,6 +21,10 @@ RECIPE_REF=7a0266e745d9b4acf400afa189b58e672900f710   # fcl/BUILD_JRE_25 del 202
 WORK="$ROOT/.jre"
 PAGE_FLAGS="-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384"
 
+# El runner de GitHub trae ANDROID_NDK_ROOT apuntando a su NDK (que «Liberar disco» borra), y la
+# receta usa ese si está definido. Sin él, baja el suyo (r28), que es con el que se probó.
+unset ANDROID_NDK_ROOT ANDROID_NDK_HOME ANDROID_NDK ANDROID_NDK_LATEST_HOME
+
 rm -rf "$WORK"
 git clone -q "$RECIPE" "$WORK"
 git -C "$WORK" checkout -q "$RECIPE_REF"
