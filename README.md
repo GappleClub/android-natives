@@ -7,6 +7,12 @@ ANGLE.
 Se compilan en GitHub Actions (`.github/workflows/natives.yml`) con `Scripts/build-all.sh`; cada
 etiqueta `natives-v*` publica un release con `natives-android-arm64-v8a.zip` y su SHA-256.
 
+**Java 25** (`jre25-android-arm64.zip`, el `assets/jre.zip` del APK) sale en el mismo release, de
+`Scripts/build-jre.sh` (`.github/workflows/jre.yml`): la receta pública de
+[angelauramc-openjdk-build](https://github.com/AngelAuraMC/angelauramc-openjdk-build) fijada a un
+commit, con el enlazador a páginas de 16 KB (Android 15+). El script falla si alguna biblioteca
+queda a menos de 16 KB. OpenJDK es GPL-2.0 con Classpath Exception.
+
 ## Origen y licencia
 
 Licencia **AGPL-3.0** (ver `LICENSE`).
