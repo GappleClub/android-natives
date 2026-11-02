@@ -1,0 +1,27 @@
+name: Java 25 para Android
+
+# El JRE que va dentro del APK, con bibliotecas a 16 KB (Scripts/build-jre.sh). Corre solo al
+# cambiar su receta, a mano, o desde natives.yml al publicar un release.
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    paths: ['Scripts/build-jre.sh', '.github/workflows/jre.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  jre:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - name: Liberar disco
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL && df -h /
+      - name: Compilar Java 25 a 16 KB
+        run: bash Scripts/build-jre.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jre25-android-arm64
+          path: dist/*
